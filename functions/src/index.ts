@@ -42,9 +42,10 @@ app.get(
     "/todos/:userId/:familyId",
     async (req: Request, res: Response): Promise<void> => {
         const {userId, familyId} = req.params;
+        const numericUserId = parseInt(userId, 10);
         const snapshot = await db
             .collection("todos")
-            .where("userId", "==", userId)
+            .where("userId", "==", numericUserId)
             .where("familyId", "==", familyId)
             .get();
         const todos: Todo[] = snapshot.docs.map(

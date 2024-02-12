@@ -1,6 +1,6 @@
-// functions/src/index.ts
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import {DocumentReference} from "firebase-admin/firestore";
 import express, {Request, Response} from "express";
 import cors from "cors";
 import {Todo} from "./models/todo";
@@ -12,31 +12,38 @@ app.use(cors({origin: true}));
 
 const db = admin.firestore();
 
-app.post(
-    "/todos/:userId/:familyId",
-    async (req: Request, res: Response): Promise<void> => {
-        const {userId, familyId} = req.params;
-        const todo: Todo = {
-            userId,
-            familyId,
-            ...req.body,
-        };
-        const newDocRef = db.collection("todos").doc();
-        await newDocRef.set(todo);
-        res.status(201).send({id: newDocRef.id, ...todo});
-    }
-);
+app.post("/todos/:userId/:familyId", async (req: Request, res: Response): Promise<void> => {
+    const {userId, familyId} = req.params;
+    const newDocRef = db.collection("todos").doc();
+    const todo = {
+        userId,
+        familyId,
+        ...req.body,
+        startDate: req.body.startDate ? admin.firestore.Timestamp.fromDate(new Date(req.body.startDate)) : null,
+        endDate: req.body.endDate ? admin.firestore.Timestamp.fromDate(new Date(req.body.endDate)) : null,
+        completedDate: req.body.completedDate ? admin.firestore.Timestamp.fromDate(new Date(req.body.completedDate)) : null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
 
-app.put(
-    "/todos/:userId/:familyId/:id",
-    async (req: Request, res: Response): Promise<void> => {
-        const {id} = req.params;
-        const updatedTodo: Partial<Todo> = req.body;
-        const docRef = db.collection("todos").doc(id);
-        await docRef.set(updatedTodo, {merge: true});
-        res.status(200).send({id, ...updatedTodo});
-    }
-);
+    const responseTodo = await saveAndRetrieveTodo(newDocRef, todo);
+    res.status(201).send(responseTodo);
+});
+
+app.put("/todos/:userId/:familyId/:id", async (req: Request, res: Response): Promise<void> => {
+    const {id} = req.params;
+    const docRef = db.collection("todos").doc(id);
+    const updatedTodo = {
+        ...req.body,
+        startDate: req.body.startDate ? admin.firestore.Timestamp.fromDate(new Date(req.body.startDate)) : null,
+        endDate: req.body.endDate ? admin.firestore.Timestamp.fromDate(new Date(req.body.endDate)) : null,
+        completedDate: req.body.completedDate ? admin.firestore.Timestamp.fromDate(new Date(req.body.completedDate)) : null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    const responseTodo = await saveAndRetrieveTodo(docRef, updatedTodo);
+    res.status(200).send(responseTodo);
+});
 
 app.get(
     "/todos/:userId/:familyId",
@@ -76,5 +83,23 @@ app.delete(
         res.status(200).send();
     }
 );
+
+function convertFirestoreTimestamps(todo:Todo) {
+    return {
+        ...todo,
+        startDate: todo.startDate?.toDate() || null,
+        endDate: todo.endDate?.toDate() || null,
+        completedDate: todo.completedDate?.toDate() || null,
+        createdAt: todo.createdAt?.toDate() || null,
+        updatedAt: todo.updatedAt?.toDate() || null,
+    };
+}
+
+async function saveAndRetrieveTodo(docRef:DocumentReference, todo:Todo) {
+    await docRef.set(todo);
+    const savedDoc = await docRef.get();
+    const todoData = savedDoc.data();
+    return {id: savedDoc.id, ...convertFirestoreTimestamps(todoData as Todo)};
+}
 
 exports.api = functions.https.onRequest(app);

@@ -1,5 +1,3 @@
-import {Timestamp} from "firebase-admin/firestore"; // 공백 제거
-
 export interface Todo {
   id?: string;
   userId: string;
@@ -8,10 +6,10 @@ export interface Todo {
   title: string;
   description: string;
   completed: boolean;
-  startDate?: Timestamp; // 시작일
-  endDate?: Timestamp; // 종료일
-  completedDate?: Timestamp; // 완료한 날짜
-  createdAt?: Timestamp; // 생성일
-  updatedAt?: Timestamp; // 수정일
+  startDate?: Date | null;
+  endDate?: Date | null;
+  completedDate?: Date | null;
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
 }
 // 파일의

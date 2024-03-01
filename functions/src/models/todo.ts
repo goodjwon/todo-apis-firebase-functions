@@ -1,6 +1,6 @@
 export interface Todo {
   id?: string;
-  userId: string;
+  userUID: string;
   familyId: string;
   name: string;
   title: string;

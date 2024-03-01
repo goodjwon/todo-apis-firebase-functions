@@ -13,12 +13,12 @@ app.use(cors({origin: true}));
 const db = admin.firestore();
 
 app.post(
-    "/todos/:userId/:familyId",
+    "/todos/:userUID/:familyId",
     async (req: Request, res: Response): Promise<void> => {
-        const {userId, familyId} = req.params;
+        const {userUID, familyId} = req.params;
         const newDocRef = db.collection("todos").doc();
         const todo = {
-            userId,
+            userUID,
             familyId,
             ...req.body,
             startDate: req.body.startDate ?
@@ -46,7 +46,7 @@ app.post(
 );
 
 app.put(
-    "/todos/:userId/:familyId/:id",
+    "/todos/:userUID/:familyId/:id",
     async (req: Request, res: Response): Promise<void> => {
         const {id} = req.params;
         const docRef = db.collection("todos").doc(id);
@@ -76,13 +76,12 @@ app.put(
 );
 
 app.get(
-    "/todos/:userId/:familyId",
+    "/todos/:userUID/:familyId",
     async (req: Request, res: Response): Promise<void> => {
-        const {userId, familyId} = req.params;
-        const numericUserId = parseInt(userId, 10);
+        const {userUID, familyId} = req.params;
         const snapshot = await db
             .collection("todos")
-            .where("userId", "==", numericUserId)
+            .where("userUID", "==", userUID)
             .where("familyId", "==", familyId)
             .get();
         const todos: Todo[] = snapshot.docs.map((doc) => {
@@ -96,7 +95,7 @@ app.get(
 );
 
 app.get(
-    "/todos/:userId/:familyId/:id",
+    "/todos/:userUID/:familyId/:id",
     async (req: Request, res: Response): Promise<void> => {
         const {id} = req.params;
         const doc = await db.collection("todos").doc(id).get();
@@ -110,7 +109,7 @@ app.get(
 );
 
 app.delete(
-    "/todos/:userId/:familyId/:id",
+    "/todos/:userUID/:familyId/:id",
     async (req: Request, res: Response): Promise<void> => {
         const {id} = req.params;
         await db.collection("todos").doc(id).delete();
@@ -129,7 +128,7 @@ function convertFirestoreTimestamps(
     data: FirebaseFirestore.DocumentData
 ): Todo {
     return {
-        userId: String(data.userId), // userId를 문자열로 변환
+        userUID: data.userUID,
         familyId: data.familyId,
         name: data.name,
         title: data.title,

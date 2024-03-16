@@ -8,8 +8,9 @@ export interface Todo {
   completed: boolean;
   startDate?: Date | null;
   endDate?: Date | null;
+  completerName?: string | null;
+  completerId?: string | null;
   completedDate?: Date | null;
   createdAt?: Date | null;
   updatedAt?: Date | null;
 }
-// 파일의

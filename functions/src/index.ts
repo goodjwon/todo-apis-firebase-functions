@@ -124,21 +124,30 @@ async function saveAndRetrieveTodo(docRef: DocumentReference, todo: Todo) {
     return {id: savedDoc.id, ...(todoData as Todo)};
 }
 
-function convertFirestoreTimestamps(
-    data: FirebaseFirestore.DocumentData
-): Todo {
+function convertFirestoreTimestamps(data: FirebaseFirestore.DocumentData): Todo {
+    // Helper function to convert Timestamp to Date or pass through the value
+    const toDateOrPass = (value: Date): Date | null => {
+        return value instanceof Timestamp ? value.toDate() : value;
+    };
+
     return {
+        id: data.id,
         userUID: data.userUID,
         familyId: data.familyId,
         name: data.name,
         title: data.title,
         description: data.description,
-        completed: data.completed,
-        startDate: data.startDate instanceof Timestamp ? data.startDate.toDate() : data.startDate,
-        endDate: data.endDate instanceof Timestamp ? data.endDate.toDate() : data.endDate,
-        completedDate: data.completedDate instanceof Timestamp ? data.completedDate.toDate() : data.completedDate,
-        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
-        updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt,
+        isCompleted: data.isCompleted,
+        startDate: toDateOrPass(data.startDate),
+        endDate: toDateOrPass(data.endDate),
+        completerName: data.completerName,
+        completerId: data.completerId,
+        completedDate: toDateOrPass(data.completedDate),
+        alarmTime: toDateOrPass(data.alarmTime),
+        isLunarCalendar: data.isLunarCalendar,
+        dDayAsDate: toDateOrPass(data.dDayAsDate),
+        createdAt: toDateOrPass(data.createdAt),
+        updatedAt: toDateOrPass(data.updatedAt),
     };
 }
 

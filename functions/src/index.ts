@@ -17,20 +17,23 @@ app.post(
     async (req: Request, res: Response): Promise<void> => {
         const {userUID, familyId} = req.params;
         const newDocRef = db.collection("todos").doc();
+        console.log("===");
+        console.log(req);
+
         const todo = {
             userUID,
             familyId,
             ...req.body,
             startDate: req.body.startDate ?
-                admin.firestore.Timestamp.fromDate(
+                Timestamp.fromDate(
                     new Date(req.body.startDate)
                 ) :
                 null,
             endDate: req.body.endDate ?
-                admin.firestore.Timestamp.fromDate(new Date(req.body.endDate)) :
+                Timestamp.fromDate(new Date(req.body.endDate)) :
                 null,
             completedDate: req.body.completedDate ?
-                admin.firestore.Timestamp.fromDate(
+                Timestamp.fromDate(
                     new Date(req.body.completedDate)
                 ) :
                 null,

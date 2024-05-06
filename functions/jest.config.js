@@ -1,10 +1,9 @@
 module.exports = {
+	setupFilesAfterEnv: ['./jest.setup.js'],
 	transform: {
-	  '^.+\\.js$': 'babel-jest'
+	  '^.+\\.(js|ts)$': 'babel-jest'
 	},
 	testEnvironment: 'node',
-	transformIgnorePatterns: [
-	  'node_modules/(?!@firebase)'
-	]
+	transformIgnorePatterns: ['node_modules/(?!(@firebase|firestore-jest-mock))'],
   };
   

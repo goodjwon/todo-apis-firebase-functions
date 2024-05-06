@@ -2,6 +2,8 @@ import request from 'supertest';
 const api = 'http://localhost:5001/todo-list-group/us-central1/api'; 
 import admin from 'firebase-admin'; // This will auto-mock
 
+admin.initializeApp();
+
 // Mock data
 const mockTodo = {
   userUID: '7iBlbRxnYLWtCqUhgO8CEZIMKZn1',

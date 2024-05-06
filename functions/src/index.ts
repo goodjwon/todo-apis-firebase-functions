@@ -7,6 +7,9 @@ import {Todo} from "./models/todo";
 
 admin.initializeApp();
 
+console.log("====================================================");
+console.log(admin);
+
 const app = express();
 app.use(cors({origin: true}));
 
@@ -18,22 +21,23 @@ app.post(
         const {userUID, familyId} = req.params;
         const newDocRef = db.collection("todos").doc();
         console.log("===");
-        console.log(req);
+        console.log(req.body);
 
         const todo = {
             userUID,
             familyId,
             ...req.body,
             startDate: req.body.startDate ?
-                Timestamp.fromDate(
+                admin.firestore.Timestamp.fromDate(
                     new Date(req.body.startDate)
                 ) :
                 null,
             endDate: req.body.endDate ?
-                Timestamp.fromDate(new Date(req.body.endDate)) :
+                admin.firestore.Timestamp.fromDate(
+                    new Date(req.body.endDate)) :
                 null,
             completedDate: req.body.completedDate ?
-                Timestamp.fromDate(
+                admin.firestore.Timestamp.fromDate(
                     new Date(req.body.completedDate)
                 ) :
                 null,

@@ -1,9 +1,9 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import {DocumentReference, Timestamp} from "firebase-admin/firestore";
 import express, {Request, Response} from "express";
 import cors from "cors";
 import {Todo} from "./models/todo";
+import {DocumentReference} from "firebase-admin/firestore";
 
 admin.initializeApp();
 
@@ -11,6 +11,8 @@ console.log("====================================================");
 console.log(admin);
 
 const app = express();
+const {Timestamp} = admin.firestore;
+
 app.use(cors({origin: true}));
 
 const db = admin.firestore();
@@ -28,16 +30,16 @@ app.post(
             familyId,
             ...req.body,
             startDate: req.body.startDate ?
-                admin.firestore.Timestamp.fromDate(
+                Timestamp.fromDate(
                     new Date(req.body.startDate)
                 ) :
                 null,
             endDate: req.body.endDate ?
-                admin.firestore.Timestamp.fromDate(
+                Timestamp.fromDate(
                     new Date(req.body.endDate)) :
                 null,
             completedDate: req.body.completedDate ?
-                admin.firestore.Timestamp.fromDate(
+                Timestamp.fromDate(
                     new Date(req.body.completedDate)
                 ) :
                 null,
@@ -60,15 +62,15 @@ app.put(
         const updatedTodo = {
             ...req.body,
             startDate: req.body.startDate ?
-                admin.firestore.Timestamp.fromDate(
+                Timestamp.fromDate(
                     new Date(req.body.startDate)
                 ) :
                 null,
             endDate: req.body.endDate ?
-                admin.firestore.Timestamp.fromDate(new Date(req.body.endDate)) :
+                Timestamp.fromDate(new Date(req.body.endDate)) :
                 null,
             completedDate: req.body.completedDate ?
-                admin.firestore.Timestamp.fromDate(
+                Timestamp.fromDate(
                     new Date(req.body.completedDate)
                 ) :
                 null,

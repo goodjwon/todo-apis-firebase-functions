@@ -3,7 +3,6 @@ import * as admin from "firebase-admin";
 import express, {Request, Response} from "express";
 import cors from "cors";
 import {Todo} from "./models/todo";
-import {DocumentReference} from "firebase-admin/firestore";
 
 admin.initializeApp();
 
@@ -12,6 +11,7 @@ console.log(admin);
 
 const app = express();
 const {Timestamp} = admin.firestore;
+type DocumentReference = admin.firestore.DocumentReference;
 
 app.use(cors({origin: true}));
 

@@ -6,9 +6,6 @@ import {Todo} from "./models/todo";
 
 admin.initializeApp();
 
-console.log("====================================================");
-console.log(admin);
-
 const app = express();
 const {Timestamp} = admin.firestore;
 type DocumentReference = admin.firestore.DocumentReference;
@@ -22,26 +19,19 @@ app.post(
     async (req: Request, res: Response): Promise<void> => {
         const {userUID, familyId} = req.params;
         const newDocRef = db.collection("todos").doc();
-        console.log("===");
-        console.log(req.body);
 
         const todo = {
             userUID,
             familyId,
             ...req.body,
             startDate: req.body.startDate ?
-                Timestamp.fromDate(
-                    new Date(req.body.startDate)
-                ) :
+                Timestamp.fromDate(new Date(req.body.startDate)) :
                 null,
             endDate: req.body.endDate ?
-                Timestamp.fromDate(
-                    new Date(req.body.endDate)) :
+                Timestamp.fromDate(new Date(req.body.endDate)) :
                 null,
             completedDate: req.body.completedDate ?
-                Timestamp.fromDate(
-                    new Date(req.body.completedDate)
-                ) :
+                Timestamp.fromDate(new Date(req.body.completedDate)) :
                 null,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -62,17 +52,13 @@ app.put(
         const updatedTodo = {
             ...req.body,
             startDate: req.body.startDate ?
-                Timestamp.fromDate(
-                    new Date(req.body.startDate)
-                ) :
+                Timestamp.fromDate(new Date(req.body.startDate)) :
                 null,
             endDate: req.body.endDate ?
                 Timestamp.fromDate(new Date(req.body.endDate)) :
                 null,
             completedDate: req.body.completedDate ?
-                Timestamp.fromDate(
-                    new Date(req.body.completedDate)
-                ) :
+                Timestamp.fromDate(new Date(req.body.completedDate)) :
                 null,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         };
@@ -95,8 +81,8 @@ app.get(
             .get();
         const todos: Todo[] = snapshot.docs.map((doc) => {
             const todoData = doc.data();
-            const convertedTodo = convertFirestoreTimestamps(todoData); // Timestamp 필드 변환
-            return {id: doc.id, ...convertedTodo};
+            const convertedTodo = convertFirestoreTimestamps({id: doc.id, ...todoData}); // id값추가 2024.05.15-1
+            return convertedTodo;
         });
 
         res.status(200).json(todos);
@@ -111,8 +97,8 @@ app.get(
         if (!doc.exists) {
             res.status(404).send("Todo not found");
         } else {
-            const todoData = convertFirestoreTimestamps(doc.data() as Todo);
-            res.status(200).json({id: doc.id, ...todoData});
+            const todoData = convertFirestoreTimestamps({id: doc.id, ...(doc.data() as Todo)}); // id값추가 2024.05.15-1
+            res.status(200).json(todoData);
         }
     }
 );
@@ -130,17 +116,17 @@ async function saveAndRetrieveTodo(docRef: DocumentReference, todo: Todo) {
     await docRef.set(todo);
     const savedDoc = await docRef.get();
     const todoData = savedDoc.data();
-    return {id: savedDoc.id, ...(todoData as Todo)};
+    return {id: savedDoc.id, ...(todoData as Todo)}; // id값추가 2024.05.15-1
 }
 
 function convertFirestoreTimestamps(data: FirebaseFirestore.DocumentData): Todo {
     // Helper function to convert Timestamp to Date or pass through the value
-    const toDateOrPass = (value: Date): Date | null => {
+    const toDateOrPass = (value: any): Date | null => {
         return value instanceof Timestamp ? value.toDate() : value;
     };
 
     return {
-        id: data.id,
+        id: data.id, // id값추가 2024.05.15-1
         userUID: data.userUID,
         familyId: data.familyId,
         name: data.name,

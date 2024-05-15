@@ -20,6 +20,12 @@ app.post(
         const {userUID, familyId} = req.params;
         const newDocRef = db.collection("todos").doc();
 
+        // Check if start date is greater than end date
+        if (new Date(req.body.startDate) > new Date(req.body.endDate)) {
+            res.status(400).send("Start date cannot be greater than end date."); // 에러 메시지 반환
+            return;
+        }
+
         const todo = {
             userUID,
             familyId,
@@ -44,11 +50,19 @@ app.post(
     }
 );
 
+
 app.put(
     "/todos/:userUID/:familyId/:id",
     async (req: Request, res: Response): Promise<void> => {
         const {id} = req.params;
         const docRef = db.collection("todos").doc(id);
+
+        // Check if start date is greater than end date
+        if (new Date(req.body.startDate) > new Date(req.body.endDate)) {
+            res.status(400).send("Start date cannot be greater than end date."); // 에러 메시지 반환
+            return;
+        }
+
         const updatedTodo = {
             ...req.body,
             startDate: req.body.startDate ?
@@ -61,6 +75,23 @@ app.put(
                 Timestamp.fromDate(new Date(req.body.completedDate)) :
                 null,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+
+        const responseTodo = await saveAndRetrieveTodo(docRef, updatedTodo);
+        const convertedTodo = convertFirestoreTimestamps(responseTodo);
+
+        res.status(200).send(convertedTodo);
+    }
+);
+
+app.put(
+    "/todos/:userUID/:familyId/:id/complete",
+    async (req: Request, res: Response): Promise<void> => {
+        const {id} = req.params;
+        const docRef = db.collection("todos").doc(id);
+
+        const updatedTodo: Partial<Todo> = { // Partial<Todo> 타입 사용 2024.05.15-4
+            isCompleted: true,
         };
 
         const responseTodo = await saveAndRetrieveTodo(docRef, updatedTodo);
@@ -112,11 +143,11 @@ app.delete(
     }
 );
 
-async function saveAndRetrieveTodo(docRef: DocumentReference, todo: Todo) {
-    await docRef.set(todo);
+async function saveAndRetrieveTodo(docRef: DocumentReference, todo: Partial<Todo>) { // Partial<Todo> 타입 사용 2024.05.15-4
+    await docRef.set(todo, {merge: true}); // 병합을 통해 필드를 업데이트 2024.05.15-4
     const savedDoc = await docRef.get();
     const todoData = savedDoc.data();
-    return {id: savedDoc.id, ...(todoData as Todo)}; // id값추가 2024.05.15-1
+    return {id: savedDoc.id, ...(todoData as Todo)};
 }
 
 function convertFirestoreTimestamps(data: FirebaseFirestore.DocumentData): Todo {
